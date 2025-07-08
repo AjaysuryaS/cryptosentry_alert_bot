@@ -10,12 +10,19 @@ class TelegramService:
             raise ValueError("Missing Telegram bot token or chat ID.")
 
     def send_message(self, message):
+        if not message.strip():
+            print("Empty message not sent.")
+            return
+
         url = f"https://api.telegram.org/bot{self.bot_token}/sendMessage"
         payload = {
             "chat_id": self.chat_id,
             "text": message
         }
 
-        response = requests.post(url, data=payload)
-        if response.status_code != 200:
-            raise Exception(f"Telegram API Error: {response.status_code} - {response.text}")
+        try:
+            response = requests.post(url, data=payload, timeout=10)
+            response.raise_for_status()
+            print("Message sent successfully.")
+        except Exception as e:
+            print("Error sending Telegram message:", e)
