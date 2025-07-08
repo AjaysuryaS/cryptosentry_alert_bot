@@ -1,20 +1,21 @@
+import os
 import requests
 
-BOT_TOKEN = "7258922131:AAEklzNSS-iXX6Lglkd_Wr7TA9q6mniW5M8"
-CHAT_ID = "1970010422"
+class TelegramService:
+    def __init__(self):
+        self.bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
+        self.chat_id = os.getenv("TELEGRAM_CHAT_ID")
 
-def send_telegram_message(message):
-    if not message.strip():
-        print("Empty message not sent.")
-        return
-    url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
-    payload = {
-        "chat_id": CHAT_ID,
-        "text": message
-    }
-    try:
-        response = requests.post(url, data=payload, timeout=10)
-        response.raise_for_status()
-        print("Message sent successfully.")
-    except Exception as e:
-        print("Error sending Telegram message:", e)
+        if not self.bot_token or not self.chat_id:
+            raise ValueError("Missing Telegram bot token or chat ID.")
+
+    def send_message(self, message):
+        url = f"https://api.telegram.org/bot{self.bot_token}/sendMessage"
+        payload = {
+            "chat_id": self.chat_id,
+            "text": message
+        }
+
+        response = requests.post(url, data=payload)
+        if response.status_code != 200:
+            raise Exception(f"Telegram API Error: {response.status_code} - {response.text}")
