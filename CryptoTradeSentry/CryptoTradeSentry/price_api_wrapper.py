@@ -2,23 +2,22 @@
 Price API Wrapper - Provides Binance-style interface using CoinGecko backend for XEC/USDT
 """
 import requests
+import time
 
-def get_current_price():
-    """
-    Get current XEC/USDT price using CoinGecko API
-    Returns price in the same format as the Binance API would
-    """
-    url = "https://api.coingecko.com/api/v3/exchanges/binance/tickers?coin_ids=ecash"
+headers = {
+    "User-Agent": "Mozilla/5.0"
+}
+
+def fetch_xec_price():
+    url = "https://api.coingecko.com/api/v3/simple/price?ids=ecash&vs_currencies=usd"
     try:
-        response = requests.get(url)
+        response = requests.get(url, headers=headers, timeout=10)
+        response.raise_for_status()
         data = response.json()
-        tickers = data.get("tickers", [])
-        for ticker in tickers:
-            if ticker["base"] == "XEC" and ticker["target"] == "USDT":
-                return float(ticker["last"])
+        return float(data["ecash"]["usd"])
     except Exception as e:
-        print("Error fetching accurate price from CoinGecko Binance feed:", e)
-    return None
+        print("Error fetching price:", e)
+        return None
 
 def get_binance_style_response():
     """
