@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - XEC Price Monitor{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i data-feather="settings"></i>
+                    Monitoring Configuration
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <!-- Telegram Configuration -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="text-primary">
+                                <i data-feather="send"></i>
+                                Telegram Bot Configuration
+                            </h6>
+                            <hr>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="bot_token" class="form-label">Bot Token</label>
+                            <input type="text" class="form-control" id="bot_token" name="bot_token" 
+                                   value="{{ config.bot_token if config else '' }}" 
+                                   placeholder="1234567890:ABCdefGHIjklMNOpqrSTUvwxyz" required>
+                            <div class="form-text">Get this from @BotFather on Telegram</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="chat_id" class="form-label">Chat ID</label>
+                            <input type="text" class="form-control" id="chat_id" name="chat_id" 
+                                   value="{{ config.chat_id if config else '' }}" 
+                                   placeholder="123456789" required>
+                            <div class="form-text">Your Telegram chat ID</div>
+                        </div>
+                    </div>
+
+                    <!-- Price Thresholds -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="text-primary">
+                                <i data-feather="target"></i>
+                                Price Alert Thresholds
+                            </h6>
+                            <hr>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="upper_threshold" class="form-label">Upper Threshold</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="upper_threshold" name="upper_threshold" 
+                                       value="{{ config.upper_threshold if config else 0.00001845 }}" 
+                                       step="0.00000001" min="0" required>
+                                <span class="input-group-text">USDT</span>
+                            </div>
+                            <div class="form-text">Alert when price goes above this value</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="lower_threshold" class="form-label">Lower Threshold</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="lower_threshold" name="lower_threshold" 
+                                       value="{{ config.lower_threshold if config else 0.00001830 }}" 
+                                       step="0.00000001" min="0" required>
+                                <span class="input-group-text">USDT</span>
+                            </div>
+                            <div class="form-text">Alert when price drops to this value or below</div>
+                        </div>
+                    </div>
+
+                    <!-- Monitoring Settings -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="text-primary">
+                                <i data-feather="clock"></i>
+                                Monitoring Settings
+                            </h6>
+                            <hr>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="check_interval" class="form-label">Check Interval</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="check_interval" name="check_interval" 
+                                       value="{{ config.check_interval if config else 30 }}" 
+                                       min="5" max="300" required>
+                                <span class="input-group-text">seconds</span>
+                            </div>
+                            <div class="form-text">How often to check the price (5-300 seconds)</div>
+                        </div>
+                        <div class="col-md-6 mb-3 d-flex align-items-end">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="monitoring_enabled" name="monitoring_enabled"
+                                       {% if config and config.monitoring_enabled %}checked{% endif %}>
+                                <label class="form-check-label" for="monitoring_enabled">
+                                    Enable Monitoring
+                                </label>
+                                <div class="form-text">Start monitoring immediately after saving</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+                            <i data-feather="arrow-left"></i>
+                            Back to Dashboard
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i data-feather="save"></i>
+                            Save Configuration
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Help Section -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i data-feather="help-circle"></i>
+                    Setup Instructions
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Getting Bot Token:</h6>
+                        <ol class="small">
+                            <li>Open Telegram and search for @BotFather</li>
+                            <li>Start a chat and type /newbot</li>
+                            <li>Follow the instructions to create your bot</li>
+                            <li>Copy the bot token provided</li>
+                        </ol>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Getting Chat ID:</h6>
+                        <ol class="small">
+                            <li>Search for @userinfobot on Telegram</li>
+                            <li>Start a chat and send any message</li>
+                            <li>The bot will reply with your chat ID</li>
+                            <li>Copy the ID number</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Form validation
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const upperThreshold = parseFloat(document.getElementById('upper_threshold').value);
+        const lowerThreshold = parseFloat(document.getElementById('lower_threshold').value);
+        
+        if (upperThreshold <= lowerThreshold) {
+            e.preventDefault();
+            alert('Upper threshold must be greater than lower threshold!');
+        }
+    });
+</script>
+{% endblock %}

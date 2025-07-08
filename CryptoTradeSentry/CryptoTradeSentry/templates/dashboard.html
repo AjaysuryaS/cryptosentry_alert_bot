@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - XEC Price Monitor{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Current Price Card -->
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <h5 class="card-title">
+                    <i data-feather="dollar-sign"></i>
+                    Current XEC Price
+                </h5>
+                <h2 class="text-primary mb-2" id="current-price">
+                    {{ "%.8f"|format(current_price) }} USDT
+                </h2>
+                <small class="text-muted" id="last-updated">
+                    Last updated: <span id="update-time">Just now</span>
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Monitoring Status Card -->
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <h5 class="card-title">
+                    <i data-feather="activity"></i>
+                    Monitoring Status
+                </h5>
+                {% if config and config.monitoring_enabled %}
+                    <span class="badge bg-success fs-6 mb-2">
+                        <i data-feather="play-circle"></i>
+                        Active
+                    </span>
+                {% else %}
+                    <span class="badge bg-secondary fs-6 mb-2">
+                        <i data-feather="pause-circle"></i>
+                        Inactive
+                    </span>
+                {% endif %}
+                <br>
+                <form method="POST" action="{{ url_for('toggle_monitoring') }}" style="display: inline;">
+                    <button type="submit" class="btn btn-sm btn-outline-primary">
+                        {% if config and config.monitoring_enabled %}
+                            <i data-feather="pause"></i>
+                            Stop Monitoring
+                        {% else %}
+                            <i data-feather="play"></i>
+                            Start Monitoring
+                        {% endif %}
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Threshold Settings Card -->
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <h5 class="card-title">
+                    <i data-feather="target"></i>
+                    Alert Thresholds
+                </h5>
+                {% if config %}
+                    <div class="mb-2">
+                        <small class="text-success">Upper: {{ "%.8f"|format(config.upper_threshold) }}</small>
+                    </div>
+                    <div class="mb-2">
+                        <small class="text-warning">Lower: {{ "%.8f"|format(config.lower_threshold) }}</small>
+                    </div>
+                {% else %}
+                    <p class="text-muted">Not configured</p>
+                {% endif %}
+                <a href="{{ url_for('settings') }}" class="btn btn-sm btn-outline-secondary">
+                    <i data-feather="settings"></i>
+                    Configure
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Price Chart -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i data-feather="trending-up"></i>
+                    XEC/USDT Price Chart (24h)
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="priceChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Alerts -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i data-feather="bell"></i>
+                    Recent Alerts (24h)
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if recent_alerts %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Type</th>
+                                    <th>Price</th>
+                                    <th>Threshold</th>
+                                    <th>Status</th>
+                                    <th>Message</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for alert in recent_alerts %}
+                                <tr>
+                                    <td>{{ alert.created_at.strftime('%H:%M:%S') }}</td>
+                                    <td>
+                                        {% if alert.alert_type == 'above_upper' %}
+                                            <span class="badge bg-success">Above Upper</span>
+                                        {% else %}
+                                            <span class="badge bg-warning">Below Lower</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ "%.8f"|format(alert.price) }}</td>
+                                    <td>{{ "%.8f"|format(alert.threshold) }}</td>
+                                    <td>
+                                        {% if alert.sent_successfully %}
+                                            <i data-feather="check-circle" class="text-success"></i>
+                                        {% else %}
+                                            <i data-feather="x-circle" class="text-danger"></i>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-truncate" style="max-width: 200px;">
+                                        {{ alert.message }}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i data-feather="bell-off" size="48"></i>
+                        <p class="mt-2">No alerts in the last 24 hours</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}
